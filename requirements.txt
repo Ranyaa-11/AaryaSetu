@@ -1,6 +1,0 @@
-flask
-gunicorn
-flask_sqlalchemy
-flask_migrate
-flask_babel
-flask_mail
