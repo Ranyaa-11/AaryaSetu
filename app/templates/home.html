@@ -1,0 +1,256 @@
+{% extends 'layout.html' %}
+{% block title %}{{ t('home_title') }}{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+
+  .hero-font { font-family: 'Playfair Display', Georgia, serif; }
+  .body-font { font-family: 'DM Sans', sans-serif; }
+
+  .hero-bg {
+    background: linear-gradient(135deg, #0f2027 0%, #1a3a4a 40%, #2d6a6a 70%, #f4a261 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(244,162,97,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(45,106,106,0.3) 0%, transparent 50%);
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: drift 8s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(30px, -20px) scale(1.08); }
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    transition: transform 0.3s, background 0.3s;
+  }
+  .stat-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.12); }
+
+  .action-btn {
+    position: relative; overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+  .action-btn::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0.08);
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .action-btn:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.3); }
+  .action-btn:hover::after { opacity: 1; }
+
+  .how-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(15,32,39,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .how-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(15,32,39,0.15); }
+
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, #f4a261, #e76f51);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .fade-up {
+    opacity: 0; transform: translateY(32px);
+    animation: fadeUp 0.8s ease forwards;
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .delay-1 { animation-delay: 0.15s; }
+  .delay-2 { animation-delay: 0.30s; }
+  .delay-3 { animation-delay: 0.45s; }
+  .delay-4 { animation-delay: 0.60s; }
+
+  .pill {
+    display: inline-block;
+    background: rgba(244,162,97,0.18);
+    border: 1px solid rgba(244,162,97,0.4);
+    color: #f4a261;
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .role-card {
+    border-radius: 20px;
+    padding: 32px 28px;
+    transition: transform 0.3s;
+    cursor: default;
+  }
+  .role-card:hover { transform: scale(1.03); }
+</style>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero-bg min-h-screen flex flex-col items-center justify-center text-white px-6 py-24 body-font">
+  <!-- Decorative orbs -->
+  <div class="orb w-96 h-96 bg-amber-400 opacity-10" style="top:-80px;right:-60px;animation-delay:0s"></div>
+  <div class="orb w-64 h-64 bg-teal-400 opacity-10" style="bottom:40px;left:-40px;animation-delay:3s"></div>
+
+  <div class="relative z-10 text-center max-w-4xl mx-auto">
+    <div class="fade-up mb-6">
+      <span class="pill">{{ t('hero_pill') }}</span>
+    </div>
+
+    <h1 class="hero-font fade-up delay-1 text-6xl md:text-8xl font-black leading-none mb-6"
+        style="text-shadow:0 4px 40px rgba(0,0,0,0.4)">
+      {{ t('hero_give') }} <span style="color:#f4a261">{{ t('hero_more') }}</span><br>
+      {{ t('hero_need') }} <span style="color:#7dd3c0">{{ t('hero_less') }}</span>
+    </h1>
+
+    <p class="fade-up delay-2 text-xl md:text-2xl text-white/70 max-w-2xl mx-auto mb-12 leading-relaxed">
+      {{ t('hero_subtitle') }}
+    </p>
+
+    <!-- CTA Buttons -->
+    <div class="fade-up delay-3 flex flex-wrap justify-center gap-4 mb-16">
+      <a href="{{ url_for('main.login', next='post_need') }}"
+         class="action-btn px-8 py-4 rounded-2xl text-white font-semibold text-lg"
+         style="background:linear-gradient(135deg,#2d6a6a,#1a3a4a);border:1px solid rgba(255,255,255,0.15)">
+        📋 {{ t('post_a_need') }}
+      </a>
+      <a href="{{ url_for('main.login', next='post_item') }}"
+         class="action-btn px-8 py-4 rounded-2xl text-white font-semibold text-lg"
+         style="background:linear-gradient(135deg,#f4a261,#e76f51)">
+        🎁 {{ t('donate_item') }}
+      </a>
+      <a href="{{ url_for('main.browse_needs') }}"
+         class="action-btn px-8 py-4 rounded-2xl font-semibold text-lg"
+         style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:white">
+        🔍 {{ t('browse_needs') }}
+      </a>
+    </div>
+
+    <!-- Live Stats -->
+    <div class="fade-up delay-4 grid grid-cols-3 gap-4 max-w-lg mx-auto">
+      <div class="stat-card p-4 text-center">
+        <div class="hero-font text-3xl font-bold text-amber-400">❤️</div>
+        <div class="text-white/60 text-sm mt-1">{{ t('donors') }}</div>
+      </div>
+      <div class="stat-card p-4 text-center">
+        <div class="hero-font text-3xl font-bold text-teal-300">🏠</div>
+        <div class="text-white/60 text-sm mt-1">{{ t('institutions') }}</div>
+      </div>
+      <div class="stat-card p-4 text-center">
+        <div class="hero-font text-3xl font-bold text-rose-300">🙌</div>
+        <div class="text-white/60 text-sm mt-1">{{ t('volunteers') }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-50 animate-bounce">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════ HOW IT WORKS ═══════════════ -->
+<section class="py-24 px-6 body-font" style="background:#f8f7f4">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16">
+      <span class="text-amber-500 font-semibold uppercase tracking-widest text-sm">{{ t('simple_process') }}</span>
+      <h2 class="hero-font text-4xl md:text-5xl font-bold text-gray-900 mt-3">{{ t('how_it_works') }}</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="how-card p-8">
+        <div class="step-num">01</div>
+        <h3 class="text-xl font-bold text-gray-800 mt-3 mb-2">{{ t('step1_title') }}</h3>
+        <p class="text-gray-500 leading-relaxed">{{ t('step1_desc') }}</p>
+      </div>
+      <div class="how-card p-8">
+        <div class="step-num">02</div>
+        <h3 class="text-xl font-bold text-gray-800 mt-3 mb-2">{{ t('step2_title') }}</h3>
+        <p class="text-gray-500 leading-relaxed">{{ t('step2_desc') }}</p>
+      </div>
+      <div class="how-card p-8">
+        <div class="step-num">03</div>
+        <h3 class="text-xl font-bold text-gray-800 mt-3 mb-2">{{ t('step3_title') }}</h3>
+        <p class="text-gray-500 leading-relaxed">{{ t('step3_desc') }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ WHO IS IT FOR ═══════════════ -->
+<section class="py-24 px-6 body-font bg-white">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16">
+      <span class="text-teal-600 font-semibold uppercase tracking-widest text-sm">{{ t('community') }}</span>
+      <h2 class="hero-font text-4xl md:text-5xl font-bold text-gray-900 mt-3">{{ t('built_for_all') }}</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="role-card" style="background:linear-gradient(135deg,#fff8f0,#fde8d0)">
+        <div class="text-4xl mb-4">❤️</div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">{{ t('donors') }}</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ t('donors_desc') }}</p>
+        <a href="{{ url_for('main.register') }}"
+           class="mt-5 inline-block text-sm font-semibold text-amber-600 hover:text-amber-700">
+          {{ t('join_donor') }}
+        </a>
+      </div>
+      <div class="role-card" style="background:linear-gradient(135deg,#f0fdf8,#ccfbf1)">
+        <div class="text-4xl mb-4">🏠</div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">{{ t('institutions') }}</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ t('institutions_desc') }}</p>
+        <a href="{{ url_for('main.register') }}"
+           class="mt-5 inline-block text-sm font-semibold text-teal-600 hover:text-teal-700">
+          {{ t('join_institution') }}
+        </a>
+      </div>
+      <div class="role-card" style="background:linear-gradient(135deg,#fdf4ff,#f3e8ff)">
+        <div class="text-4xl mb-4">🙌</div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">{{ t('volunteers') }}</h3>
+        <p class="text-gray-600 text-sm leading-relaxed">{{ t('volunteers_desc') }}</p>
+        <a href="{{ url_for('main.register') }}"
+           class="mt-5 inline-block text-sm font-semibold text-purple-600 hover:text-purple-700">
+          {{ t('join_volunteer') }}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ BOTTOM CTA ═══════════════ -->
+<section class="py-20 px-6 text-center body-font"
+         style="background:linear-gradient(135deg,#0f2027,#2d6a6a)">
+  <h2 class="hero-font text-4xl md:text-5xl font-bold text-white mb-4">
+    {{ t('ready_cta') }}
+  </h2>
+  <p class="text-white/60 text-lg mb-8 max-w-xl mx-auto">
+    {{ t('join_cta_desc') }}
+  </p>
+  <a href="{{ url_for('main.register') }}"
+     class="action-btn inline-block px-10 py-4 rounded-2xl text-white font-semibold text-lg"
+     style="background:linear-gradient(135deg,#f4a261,#e76f51)">
+    {{ t('get_started') }}
+  </a>
+</section>
+{% endblock %}

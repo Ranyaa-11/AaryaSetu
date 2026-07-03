@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% block title %}{{ t('browse_items') }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+  <h2 class="text-4xl font-bold text-gray-900 mb-2">{{ t('items_title') }}</h2>
+  <p class="text-gray-500 mb-8">{{ t('items_subtitle') }}</p>
+
+  {% if items | length == 0 %}
+    <div class="text-center py-24">
+      <p class="text-6xl mb-4">📦</p>
+      <p class="text-2xl font-semibold text-gray-600">{{ t('no_items') }}</p>
+      <p class="mt-2 text-gray-400">{{ t('no_items_hint') }}</p>
+    </div>
+  {% else %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for item in items %}
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden hover:shadow-md transition-shadow">
+
+        <div class="p-6 flex-1">
+          <div class="flex items-start justify-between mb-3">
+            <h3 class="text-xl font-bold text-gray-900 leading-tight">{{ item.item_name }}</h3>
+            <span class="ml-3 shrink-0 px-3 py-1 rounded-full text-xs font-semibold
+              {% if item.status == 'Pending' %}bg-yellow-100 text-yellow-700
+              {% elif item.status == 'Accepted' %}bg-blue-100 text-blue-700
+              {% else %}bg-green-100 text-green-700{% endif %}">
+              {{ t_status(item.status) }}
+            </span>
+          </div>
+
+          {% if item.description %}
+            <p class="text-gray-500 text-sm mb-3 leading-relaxed">{{ item.description }}</p>
+          {% endif %}
+
+          <div class="flex items-center gap-1 text-sm text-gray-600 mb-2">
+            <span>📦</span>
+            <span>{{ t('quantity') }}: <strong>{{ item.quantity }}</strong></span>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-gray-100">
+            <p class="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">{{ t('donor') }}</p>
+            <p class="text-sm font-semibold text-gray-700">{{ item.donor.name }}</p>
+            {% if item.donor.phone %}
+              <p class="text-xs text-gray-500 mt-0.5">📞 {{ item.donor.phone }}</p>
+            {% endif %}
+            {% if item.donor.address %}
+              <p class="text-xs text-gray-500 mt-0.5">📍 {{ item.donor.address }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="px-6 pb-6">
+          {% if current_user.is_authenticated and current_user.role == 'institution' %}
+            <a href="{{ url_for('main.accept_item', item_id=item.id) }}"
+               class="block w-full text-center py-3 rounded-xl text-white font-semibold transition hover:scale-105"
+               style="background:linear-gradient(135deg,#2d6a6a,#1a3a4a)">
+              {{ t('accept_item') }}
+            </a>
+          {% elif not current_user.is_authenticated %}
+            <a href="{{ url_for('main.login') }}"
+               class="block w-full text-center py-3 rounded-xl text-white font-semibold transition hover:scale-105"
+               style="background:linear-gradient(135deg,#f4a261,#e76f51)">
+              {{ t('login_to_accept') }}
+            </a>
+          {% else %}
+            <div class="w-full text-center py-3 rounded-xl text-sm text-gray-400 bg-gray-50">
+              {{ t('only_inst_accept') }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

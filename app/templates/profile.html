@@ -1,0 +1,109 @@
+{% extends 'layout.html' %}
+{% block title %}My Profile — AaryaSetu{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-12">
+
+  <!-- Header -->
+  <div class="flex items-center gap-5 mb-10">
+    <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-bold text-white shadow-lg"
+         style="background:linear-gradient(135deg,#f4a261,#e76f51)">
+      {{ current_user.name[0].upper() }}
+    </div>
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">{{ current_user.name }}</h1>
+      <span class="inline-block mt-1 px-3 py-1 rounded-full text-sm font-semibold
+        {% if current_user.is_admin %}bg-amber-100 text-amber-700
+        {% elif current_user.role == 'donor' %}bg-rose-100 text-rose-700
+        {% elif current_user.role == 'institution' %}bg-teal-100 text-teal-700
+        {% else %}bg-purple-100 text-purple-700{% endif %}">
+        {% if current_user.is_admin %}🛡️ Admin
+        {% elif current_user.role == 'donor' %}❤️ Donor
+        {% elif current_user.role == 'institution' %}🏠 Institution
+        {% else %}🙌 Volunteer{% endif %}
+      </span>
+    </div>
+  </div>
+
+  <!-- Edit Profile Card -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+    <h2 class="text-xl font-bold text-gray-800 mb-6">Edit Profile</h2>
+    <form method="POST" action="{{ url_for('main.profile') }}">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Full Name</label>
+          <input type="text" name="name" value="{{ current_user.name }}" required
+                 class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-300 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+          <input type="email" value="{{ current_user.email }}" disabled
+                 class="w-full border border-gray-100 rounded-xl px-4 py-3 bg-gray-50 text-gray-400 cursor-not-allowed">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Phone Number</label>
+          <input type="tel" name="phone" value="{{ current_user.phone or '' }}"
+                 placeholder="+91 98765 43210"
+                 class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-300 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Role</label>
+          <input type="text" value="{{ current_user.role | capitalize }}" disabled
+                 class="w-full border border-gray-100 rounded-xl px-4 py-3 bg-gray-50 text-gray-400 cursor-not-allowed">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-600 mb-1">
+            {% if current_user.role == 'institution' %}Institution Address{% else %}Address{% endif %}
+          </label>
+          <textarea name="address" rows="3"
+                    placeholder="Full address including city, state and PIN"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-300 focus:outline-none resize-none">{{ current_user.address or '' }}</textarea>
+        </div>
+      </div>
+      <button type="submit"
+              class="mt-6 px-8 py-3 rounded-xl text-white font-semibold transition hover:scale-105"
+              style="background:linear-gradient(135deg,#f4a261,#e76f51)">
+        Save Changes
+      </button>
+    </form>
+  </div>
+
+  <!-- Activity Summary -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+    <h2 class="text-xl font-bold text-gray-800 mb-5">Activity Summary</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+      {% if current_user.role == 'donor' %}
+        <div class="text-center p-4 rounded-xl" style="background:#fff8f0">
+          <p class="text-3xl font-bold text-amber-500">{{ current_user.posted_items | length }}</p>
+          <p class="text-sm text-gray-500 mt-1">Items Posted</p>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background:#f0fdf8">
+          <p class="text-3xl font-bold text-teal-500">
+            {{ current_user.posted_items | selectattr('status','equalto','Accepted') | list | length }}
+          </p>
+          <p class="text-sm text-gray-500 mt-1">Accepted</p>
+        </div>
+
+      {% elif current_user.role == 'institution' %}
+        <div class="text-center p-4 rounded-xl" style="background:#f0f4ff">
+          <p class="text-3xl font-bold text-indigo-500">{{ current_user.posted_needs | length }}</p>
+          <p class="text-sm text-gray-500 mt-1">Needs Posted</p>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background:#f0fdf8">
+          <p class="text-3xl font-bold text-teal-500">
+            {{ current_user.posted_needs | selectattr('status','equalto','Accepted') | list | length }}
+          </p>
+          <p class="text-sm text-gray-500 mt-1">Fulfilled</p>
+        </div>
+
+      {% else %}
+        <div class="text-center p-4 rounded-xl" style="background:#fdf4ff">
+          <p class="text-3xl font-bold text-purple-500">🙌</p>
+          <p class="text-sm text-gray-500 mt-1">Active Volunteer</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

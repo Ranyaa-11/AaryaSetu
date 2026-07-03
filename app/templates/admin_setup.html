@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block title %}Admin Setup — AaryaSetu{% endblock %}
+
+{% block content %}
+<section class="min-h-screen flex items-center justify-center py-12 px-6"
+         style="background:linear-gradient(135deg,#0f2027 0%,#1a3a4a 60%,#2d6a6a 100%)">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4"
+           style="background:linear-gradient(135deg,#f4a261,#e76f51)">
+        🛡️
+      </div>
+      <h2 class="text-3xl font-bold text-gray-900 mb-1">Admin Setup</h2>
+      <p class="text-gray-500 text-sm">This page is for authorised administrators only.</p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="mb-5 p-4 bg-red-50 border border-red-200 rounded-xl">
+          {% for message in messages %}
+            <p class="text-red-700 text-sm">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('main.admin_setup') }}" id="adminForm">
+
+      <!-- Secret Passcode -->
+      <div class="mb-5 p-4 rounded-xl border border-amber-200" style="background:#fffbf0">
+        <label class="block text-sm font-semibold text-amber-700 mb-1">🔑 Admin Passcode</label>
+        <input type="password" name="passcode" required placeholder="Enter the secret admin passcode"
+               class="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:outline-none transition bg-white">
+        <p class="text-xs text-amber-600 mt-2">Only authorised personnel have this code.</p>
+      </div>
+
+      <!-- Full Name -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+        <input type="text" name="name" required placeholder="Admin full name"
+               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:outline-none transition">
+      </div>
+
+      <!-- Email -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+        <input type="email" name="email" required placeholder="Admin email"
+               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:outline-none transition">
+      </div>
+
+      <!-- Phone -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Phone <span class="text-gray-400 font-normal">(optional)</span></label>
+        <input type="tel" name="phone" placeholder="+91 98765 43210"
+               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:outline-none transition">
+      </div>
+
+      <!-- Password -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input type="password" name="password" id="pw" required
+               placeholder="Strong password" minlength="8"
+               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:outline-none transition">
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+        <input type="password" name="confirm_password" id="cpw" required
+               placeholder="Repeat password"
+               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:outline-none transition">
+        <p id="pwErr" class="text-red-500 text-xs mt-1 hidden">Passwords do not match</p>
+      </div>
+
+      <button type="submit"
+              class="w-full py-3 rounded-xl text-white font-semibold text-lg transition hover:scale-105"
+              style="background:linear-gradient(135deg,#1a3a4a,#0f2027)">
+        🛡️ Create Admin Account
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-400 mt-6">
+      Not an admin?
+      <a href="{{ url_for('main.register') }}" class="text-amber-600 hover:underline">Register here</a>
+    </p>
+  </div>
+</section>
+
+<script>
+  document.getElementById('adminForm').addEventListener('submit', function(e) {
+    var pw = document.getElementById('pw').value;
+    var cpw = document.getElementById('cpw').value;
+    if (pw !== cpw) {
+      e.preventDefault();
+      document.getElementById('pwErr').classList.remove('hidden');
+      document.getElementById('cpw').focus();
+    }
+  });
+</script>
+{% endblock %}

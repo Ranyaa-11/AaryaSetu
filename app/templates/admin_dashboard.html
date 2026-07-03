@@ -1,0 +1,284 @@
+{% extends 'layout.html' %}
+{% block title %}Admin Dashboard — AaryaSetu{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+  <div class="flex items-center gap-3 mb-10">
+    <span class="text-3xl">🛡️</span>
+    <div>
+      <h1 class="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
+      <p class="text-gray-500 text-sm mt-1">Full platform visibility — users, donations, and monthly analytics</p>
+    </div>
+  </div>
+
+  <!-- ══ THIS MONTH SUMMARY ══ -->
+  <div class="rounded-2xl p-6 mb-10 text-white"
+       style="background:linear-gradient(135deg,#0f2027,#2d6a6a)">
+    <h2 class="text-xl font-bold mb-5 flex items-center gap-2">📅 This Month at a Glance</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      {% set month_items = [
+        ('🔗', this_month.donations, 'Donations'),
+        ('✅', this_month.completed, 'Completed'),
+        ('🎁', this_month.items_posted, 'Items Posted'),
+        ('📋', this_month.needs_posted, 'Needs Posted'),
+        ('🚚', this_month.volunteer_deliveries, 'Volunteer Runs'),
+        ('👥', stats.total_users, 'Total Users'),
+      ] %}
+      {% for icon, val, label in month_items %}
+      <div class="bg-white/10 backdrop-blur rounded-xl p-4 text-center border border-white/20">
+        <div class="text-2xl mb-1">{{ icon }}</div>
+        <div class="text-3xl font-bold">{{ val }}</div>
+        <div class="text-white/70 text-xs mt-1">{{ label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ══ 6-MONTH TREND (visual bar chart) ══ -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-10">
+    <h2 class="text-xl font-bold text-gray-800 mb-6">📈 6-Month Donation Trend</h2>
+    {% set max_val = months | map(attribute='total') | max | default(1) %}
+    {% set max_val = max_val if max_val > 0 else 1 %}
+    <div class="flex items-end gap-4 h-40">
+      {% for m in months %}
+      <div class="flex-1 flex flex-col items-center gap-2">
+        <div class="w-full flex flex-col items-center gap-1">
+          <!-- Completed bar (green, on top) -->
+          {% set comp_h = ((m.completed / max_val) * 120) | int %}
+          {% set total_h = ((m.total / max_val) * 120) | int %}
+          <div class="w-full relative" style="height:{{ total_h }}px; min-height:4px">
+            <div class="absolute bottom-0 left-0 right-0 rounded-t-lg"
+                 style="height:{{ total_h }}px;background:rgba(45,106,106,0.25)"></div>
+            <div class="absolute bottom-0 left-0 right-0 rounded-t-lg"
+                 style="height:{{ comp_h }}px;background:linear-gradient(180deg,#059669,#10b981)"></div>
+          </div>
+        </div>
+        <div class="text-center">
+          <p class="text-xs font-bold text-gray-800">{{ m.total }}</p>
+          <p class="text-xs text-green-600">{{ m.completed }}✓</p>
+          <p class="text-xs text-gray-400 mt-1">{{ m.label }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="flex items-center gap-4 mt-4 text-xs text-gray-500">
+      <span class="flex items-center gap-1">
+        <span class="w-3 h-3 rounded-sm inline-block" style="background:rgba(45,106,106,0.25)"></span>
+        Total donations
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="w-3 h-3 rounded-sm inline-block bg-green-500"></span>
+        Completed
+      </span>
+    </div>
+  </div>
+
+  <!-- ══ OVERALL STATS ══ -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-5 mb-10">
+    {% set stat_cards = [
+      ('❤️', stats.donors, 'Donors', '#fff8f0'),
+      ('🏠', stats.institutions, 'Institutions', '#f0fdf8'),
+      ('🙌', stats.volunteers, 'Volunteers', '#fdf4ff'),
+      ('⏳', stats.pending, 'Pending', '#fffbf0'),
+      ('🚚', stats.in_transit, 'In Transit', '#f0f4ff'),
+    ] %}
+    {% for icon, val, label, bg in stat_cards %}
+    <div class="rounded-2xl p-5 shadow-sm border border-gray-100 text-center" style="background:{{ bg }}">
+      <div class="text-2xl mb-1">{{ icon }}</div>
+      <p class="text-3xl font-bold text-gray-900">{{ val }}</p>
+      <p class="text-sm text-gray-500 mt-1">{{ label }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ══ ALL USERS ══ -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="text-xl font-bold text-gray-800">👥 All Users ({{ users | length }})</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-gray-50 text-gray-500 text-left text-xs uppercase tracking-wide">
+            <th class="px-5 py-3">Name</th>
+            <th class="px-5 py-3">Email</th>
+            <th class="px-5 py-3">Role</th>
+            <th class="px-5 py-3">Phone</th>
+            <th class="px-5 py-3">Address</th>
+            <th class="px-5 py-3">Admin</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for user in users %}
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-5 py-3">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                      style="background:linear-gradient(135deg,#f4a261,#e76f51)">
+                  {{ user.name[0].upper() }}
+                </span>
+                <span class="font-medium text-gray-900">{{ user.name }}</span>
+              </div>
+            </td>
+            <td class="px-5 py-3 text-gray-600">{{ user.email }}</td>
+            <td class="px-5 py-3">
+              <span class="px-2 py-1 rounded-full text-xs font-semibold
+                {% if user.role == 'donor' %}bg-amber-100 text-amber-700
+                {% elif user.role == 'institution' %}bg-teal-100 text-teal-700
+                {% elif user.role == 'admin' %}bg-orange-100 text-orange-700
+                {% else %}bg-purple-100 text-purple-700{% endif %}">
+                {{ user.role | capitalize }}
+              </span>
+            </td>
+            <td class="px-5 py-3 text-gray-500 text-xs">{{ user.phone or '—' }}</td>
+            <td class="px-5 py-3 text-gray-500 text-xs max-w-xs truncate">{{ user.address or '—' }}</td>
+            <td class="px-5 py-3">
+              {% if user.is_admin %}
+                <div class="flex items-center gap-2">
+                  <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-semibold">Admin</span>
+                  {% if user.id != current_user.id %}
+                  <a href="{{ url_for('main.remove_admin', user_id=user.id) }}"
+                     class="text-xs text-red-500 hover:underline">Remove</a>
+                  {% endif %}
+                </div>
+              {% else %}
+                <a href="{{ url_for('main.make_admin', user_id=user.id) }}"
+                   class="text-xs text-indigo-600 hover:underline font-medium">Make Admin</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ ALL DONATIONS ══ -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h2 class="text-xl font-bold text-gray-800">🔗 All Donations ({{ donations | length }})</h2>
+    </div>
+    {% if donations %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-gray-50 text-gray-500 text-left text-xs uppercase tracking-wide">
+            <th class="px-4 py-3">#</th>
+            <th class="px-4 py-3">Item</th>
+            <th class="px-4 py-3">Donor</th>
+            <th class="px-4 py-3">Donor Address</th>
+            <th class="px-4 py-3">Institution</th>
+            <th class="px-4 py-3">Inst. Address</th>
+            <th class="px-4 py-3">Delivery</th>
+            <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3">Override</th>
+            <th class="px-4 py-3">Date</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for d in donations %}
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3 text-gray-400 text-xs">{{ d.id }}</td>
+            <td class="px-4 py-3 font-medium text-gray-900 text-xs">
+              {% if d.item %}🎁 {{ d.item.item_name }}
+              {% elif d.need %}📋 {{ d.need.item_name }}
+              {% else %}—{% endif %}
+            </td>
+            <td class="px-4 py-3 text-gray-800 text-xs font-medium">
+              {{ user_map[d.donor_id].name if d.donor_id in user_map else '—' }}
+            </td>
+            <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
+              {{ user_map[d.donor_id].address if d.donor_id in user_map and user_map[d.donor_id].address else '—' }}
+            </td>
+            <td class="px-4 py-3 text-gray-800 text-xs font-medium">
+              {{ user_map[d.institution_id].name if d.institution_id in user_map else '—' }}
+            </td>
+            <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
+              {{ user_map[d.institution_id].address if d.institution_id in user_map and user_map[d.institution_id].address else '—' }}
+            </td>
+            <td class="px-4 py-3 text-gray-600 text-xs">{{ d.delivery_method or '—' }}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 rounded-full text-xs font-semibold
+                {% if d.status == 'Completed' %}bg-green-100 text-green-700
+                {% elif d.status in ['In Transit','Delivered','Dispatched'] %}bg-blue-100 text-blue-700
+                {% elif d.status == 'Cancelled' %}bg-red-100 text-red-700
+                {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                {{ d.status }}
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              <form method="POST"
+                    action="{{ url_for('main.admin_update_status', donation_id=d.id) }}"
+                    class="flex items-center gap-1">
+                <select name="status"
+                        class="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none bg-white">
+                  {% for s in ['Pending','Dispatched','In Transit','Delivered','Completed','Cancelled'] %}
+                  <option value="{{ s }}" {% if d.status == s %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit"
+                        class="px-2 py-1 rounded-lg text-white text-xs font-bold"
+                        style="background:#f4a261">✓</button>
+              </form>
+            </td>
+            <td class="px-4 py-3 text-gray-400 text-xs">{{ d.created_at.strftime('%d %b %Y') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-gray-400 text-center py-10">No donations yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- ══ ITEMS + NEEDS ══ -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="text-lg font-bold">🎁 All Items ({{ items | length }})</h2>
+      </div>
+      <div class="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+        {% for item in items %}
+        <div class="px-5 py-3 flex justify-between items-start">
+          <div>
+            <p class="font-semibold text-gray-800 text-sm">{{ item.item_name }}</p>
+            <p class="text-xs text-gray-400">Qty: {{ item.quantity }} · {{ user_map[item.user_id].name if item.user_id in user_map else '?' }}</p>
+            {% if item.description %}<p class="text-xs text-gray-500 mt-0.5">{{ item.description }}</p>{% endif %}
+          </div>
+          <span class="ml-3 shrink-0 px-2 py-1 rounded-full text-xs font-semibold
+            {% if item.status == 'Pending' %}bg-yellow-100 text-yellow-700{% else %}bg-green-100 text-green-700{% endif %}">
+            {{ item.status }}
+          </span>
+        </div>
+        {% else %}
+          <p class="text-gray-400 text-center py-8 text-sm">No items yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="text-lg font-bold">📋 All Needs ({{ needs | length }})</h2>
+      </div>
+      <div class="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+        {% for need in needs %}
+        <div class="px-5 py-3 flex justify-between items-start">
+          <div>
+            <p class="font-semibold text-gray-800 text-sm">{{ need.item_name }}</p>
+            <p class="text-xs text-gray-400">Qty: {{ need.quantity }} · {{ need.urgency }} · {{ user_map[need.user_id].name if need.user_id in user_map else '?' }}</p>
+            {% if need.description %}<p class="text-xs text-gray-500 mt-0.5">{{ need.description }}</p>{% endif %}
+          </div>
+          <span class="ml-3 shrink-0 px-2 py-1 rounded-full text-xs font-semibold
+            {% if need.status == 'Pending' %}bg-yellow-100 text-yellow-700{% else %}bg-green-100 text-green-700{% endif %}">
+            {{ need.status }}
+          </span>
+        </div>
+        {% else %}
+          <p class="text-gray-400 text-center py-8 text-sm">No needs yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

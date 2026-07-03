@@ -1,0 +1,150 @@
+{% extends 'layout.html' %}
+{% block title %}Institution Dashboard{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-10">
+
+  <div class="flex items-center gap-4 mb-10">
+    <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shadow"
+         style="background:linear-gradient(135deg,#2d6a6a,#1a3a4a)">
+      {{ current_user.name[0].upper() }}
+    </div>
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Welcome, {{ current_user.name.split()[0] }}!</h1>
+      <p class="text-gray-500 text-sm">🏠 Institution Dashboard</p>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+    <a href="{{ url_for('main.post_need') }}"
+       class="p-6 rounded-2xl text-white shadow-sm transition hover:scale-105"
+       style="background:linear-gradient(135deg,#2d6a6a,#1a3a4a)">
+      <div class="text-3xl mb-3">📋</div>
+      <h3 class="text-xl font-bold mb-1">Post New Need</h3>
+      <p class="text-white/80 text-sm">Let donors know what you need</p>
+    </a>
+    <a href="{{ url_for('main.browse_items') }}"
+       class="p-6 rounded-2xl text-white shadow-sm transition hover:scale-105"
+       style="background:linear-gradient(135deg,#f4a261,#e76f51)">
+      <div class="text-3xl mb-3">🎁</div>
+      <h3 class="text-xl font-bold mb-1">Browse Items</h3>
+      <p class="text-white/80 text-sm">Find available donations</p>
+    </a>
+    <a href="{{ url_for('main.profile') }}"
+       class="p-6 rounded-2xl shadow-sm transition hover:scale-105 border border-gray-100 bg-white">
+      <div class="text-3xl mb-3">👤</div>
+      <h3 class="text-xl font-bold text-gray-800 mb-1">My Profile</h3>
+      <p class="text-gray-500 text-sm">Update address — donors &amp; volunteers need this!</p>
+    </a>
+  </div>
+
+  <!-- ── INCOMING DONATIONS ── -->
+  <h2 class="text-2xl font-bold text-gray-900 mb-5">📬 Incoming Donations</h2>
+
+  {% if my_donations %}
+    <div class="space-y-4 mb-12">
+      {% for d in my_donations %}
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+
+          <div class="flex-1">
+            <p class="font-bold text-gray-900 text-lg mb-1">
+              {% if d.item %}🎁 {{ d.item.item_name }}{% else %}📋 Need Fulfillment{% endif %}
+            </p>
+            <p class="text-sm text-gray-500 mb-3">
+              Delivery: <strong>{{ d.delivery_method }}</strong> ·
+              {{ d.created_at.strftime('%d %b %Y') }}
+            </p>
+
+            <!-- Donor info (so institution knows who's sending) -->
+            <div class="p-3 rounded-xl text-sm" style="background:#fff8f0">
+              <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1">From Donor</p>
+              {% if d.donor %}
+                <p class="font-semibold text-gray-800">{{ d.donor.name }}</p>
+                {% if d.donor.phone %}<p class="text-gray-500">📞 {{ d.donor.phone }}</p>{% endif %}
+                {% if d.donor.address %}<p class="text-gray-500">📍 {{ d.donor.address }}</p>{% endif %}
+                <p class="text-gray-500">✉️ {{ d.donor.email }}</p>
+              {% else %}
+                <p class="text-gray-400">Donor information unavailable</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Status + Confirm Receipt -->
+          <div class="flex flex-col items-end gap-3 min-w-[180px]">
+            <span class="px-4 py-2 rounded-full text-sm font-semibold
+              {% if d.status == 'Completed' %}bg-green-100 text-green-700
+              {% elif d.status == 'In Transit' or d.status == 'Delivered' %}bg-blue-100 text-blue-700
+              {% elif d.status == 'Dispatched' %}bg-purple-100 text-purple-700
+              {% elif d.status == 'Cancelled' %}bg-red-100 text-red-700
+              {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+              {% if d.status == 'Pending' %}⏳ Pending
+              {% elif d.status == 'Dispatched' %}🚀 On the Way
+              {% elif d.status == 'In Transit' %}🚚 In Transit
+              {% elif d.status == 'Delivered' %}📬 Delivered
+              {% elif d.status == 'Completed' %}✅ Received
+              {% elif d.status == 'Cancelled' %}❌ Cancelled
+              {% else %}{{ d.status }}{% endif %}
+            </span>
+
+            {% if d.status == 'Delivered' %}
+              <form method="POST" action="{{ url_for('main.update_donation_status', donation_id=d.id) }}">
+                <input type="hidden" name="status" value="Completed">
+                <button type="submit"
+                        class="px-4 py-2 rounded-xl text-white text-sm font-semibold transition hover:scale-105"
+                        style="background:linear-gradient(135deg,#059669,#10b981)">
+                  ✅ Confirm Receipt
+                </button>
+              </form>
+            {% elif d.status == 'Completed' %}
+              <p class="text-xs text-green-600 font-semibold text-right">
+                Received on {{ d.completed_at.strftime('%d %b') if d.completed_at else '—' }}
+              </p>
+            {% elif d.status == 'Pending' %}
+              <p class="text-xs text-gray-400 text-right">Waiting for<br>donor to dispatch</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center mb-12">
+      <p class="text-3xl mb-2">📬</p>
+      <p class="text-gray-500">No incoming donations yet. Post your needs or browse available items!</p>
+    </div>
+  {% endif %}
+
+  <!-- Posted Needs -->
+  <h2 class="text-2xl font-bold text-gray-900 mb-5">📋 Your Posted Needs</h2>
+  {% if current_user.posted_needs %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for need in current_user.posted_needs %}
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+        <div class="flex items-start justify-between mb-2">
+          <h3 class="font-bold text-gray-900">{{ need.item_name }}</h3>
+          <span class="ml-2 shrink-0 px-2 py-1 rounded-full text-xs font-semibold
+            {% if need.status == 'Pending' %}bg-yellow-100 text-yellow-700
+            {% elif need.status == 'Accepted' %}bg-blue-100 text-blue-700
+            {% else %}bg-green-100 text-green-700{% endif %}">
+            {{ need.status }}
+          </span>
+        </div>
+        {% if need.description %}<p class="text-gray-500 text-sm mb-2">{{ need.description }}</p>{% endif %}
+        <p class="text-sm text-gray-600">📦 Qty: <strong>{{ need.quantity }}</strong></p>
+        <p class="text-sm text-gray-600">🔥 Urgency: <strong>{{ need.urgency }}</strong></p>
+        <p class="text-xs text-gray-400 mt-1">{{ need.created_at.strftime('%d %b %Y') }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
+      <p class="text-gray-400">No needs posted yet.</p>
+      <a href="{{ url_for('main.post_need') }}"
+         class="mt-3 inline-block px-5 py-2 rounded-xl text-white text-sm font-semibold"
+         style="background:linear-gradient(135deg,#2d6a6a,#1a3a4a)">Post First Need</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

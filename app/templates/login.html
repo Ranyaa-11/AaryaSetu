@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}{{ t('login') }}{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen">
+  <form method="POST" class="bg-white p-8 rounded-xl shadow-lg w-96">
+    <h2 class="text-2xl font-bold mb-6 text-center">{{ t('login') }}</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <p class="text-red-500 text-sm mb-4">{{ messages[0] }}</p>
+      {% endif %}
+    {% endwith %}
+
+    <input type="email" name="email" placeholder="{{ t('email') }}" required
+           class="w-full mb-4 p-3 border rounded">
+
+    <input type="password" name="password" placeholder="{{ t('password') }}" required
+           class="w-full mb-6 p-3 border rounded">
+
+    <button type="submit"
+            class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+      {{ t('login') }}
+    </button>
+  </form>
+</div>
+{% endblock %}

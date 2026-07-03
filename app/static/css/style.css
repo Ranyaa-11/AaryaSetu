@@ -1,0 +1,32 @@
+/* Base */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Card hover polish */
+.card-hover {
+  transition: all 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+/* Button glow effect */
+.btn-glow:hover {
+  box-shadow: 0 10px 25px rgba(244, 162, 97, 0.4);
+}
+
+/* Form inputs — consistent focus ring */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+}
+
+/* Smooth page transitions */
+main {
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
