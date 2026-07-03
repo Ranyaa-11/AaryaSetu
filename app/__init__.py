@@ -1,3 +1,4 @@
+import os
 from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -16,21 +17,28 @@ def get_locale():
 def create_app():
     app = Flask(__name__)
 
-    app.config['SECRET_KEY'] = 'aaryasetu-secret'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///aaryasetu.db'
+    # Use environment variables for sensitive config
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'aaryasetu-secret-dev')
+    
+    # Database: Use PostgreSQL in production, SQLite in dev
+    database_url = os.getenv('DATABASE_URL', 'sqlite:///aaryasetu.db')
+    # Fix PostgreSQL URI if needed (Render uses postgres:// but SQLAlchemy needs postgresql://)
+    if database_url and database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Babel config
     app.config['BABEL_DEFAULT_LOCALE'] = 'en'
     app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'hi', 'kn']
 
-    # Mail config — fill in your Gmail credentials
-    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = 'your-email@gmail.com'      # ← change this
-    app.config['MAIL_PASSWORD'] = 'your-app-password'          # ← change this
-    app.config['MAIL_DEFAULT_SENDER'] = 'AaryaSetu <your-email@gmail.com>'
+    # Mail config — use environment variables
+    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', True)
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', '')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'AaryaSetu <noreply@aaryasetu.com>')
 
     db.init_app(app)
     login_manager.init_app(app)
