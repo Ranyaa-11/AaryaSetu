@@ -1,6 +1,9 @@
 flask
+flask-sqlalchemy
+flask-login
+flask-babel
+flask-mail
+flask-jwt-extended
+flask-cors
+werkzeug
 gunicorn
-flask_sqlalchemy
-flask_migrate
-flask_babel
-flask_mail
