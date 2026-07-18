@@ -540,3 +540,19 @@ def forbidden(e):
 @bp.app_errorhandler(500)
 def server_error(e):
     return render_template('error.html', code=500, message=t('err_500')), 500
+@bp.route('/reset-db-once', methods=['GET', 'POST'])
+def reset_db_once():
+    if request.method == 'POST':
+        if request.form.get('passcode') != ADMIN_SECRET:
+            flash('Incorrect passcode.', 'error')
+            return '''<form method="POST">
+                <input type="password" name="passcode" placeholder="Passcode">
+                <button type="submit">Reset Database</button>
+            </form>'''
+        db.drop_all()
+        db.create_all()
+        return "<h2>Database reset complete. Remove this route now.</h2>"
+    return '''<form method="POST">
+        <input type="password" name="passcode" placeholder="Passcode">
+        <button type="submit">Reset Database</button>
+    </form>'''
