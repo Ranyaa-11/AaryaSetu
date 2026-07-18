@@ -1,4 +1,5 @@
-# AaryaSetu 🌉
+
+# AaryaSetu 
 
 **Connecting Donors, Institutions & Volunteers — A Digital Bridge for Social Good**
 
