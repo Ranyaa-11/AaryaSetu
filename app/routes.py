@@ -23,13 +23,24 @@ def admin_required(f):
     return decorated
 
 def send_email(to, subject, body):
-    """Send email notification — silently fails if mail not configured."""
-    try:
-        from flask_mail import Message
-        msg = Message(subject, recipients=[to], body=body)
-        mail.send(msg)
-    except Exception:
-        pass  # Never crash the app over a notification
+    """Send email notification in a background thread — never blocks or crashes the request."""
+    import threading
+    from flask import current_app
+
+    app_obj = current_app._get_current_object()
+
+    def _send(app_obj, to, subject, body):
+        with app_obj.app_context():
+            try:
+                from flask_mail import Message
+                msg = Message(subject, recipients=[to], body=body)
+                mail.send(msg)
+            except Exception as e:
+                app_obj.logger.warning(f"Email send failed: {e}")
+
+    thread = threading.Thread(target=_send, args=(app_obj, to, subject, body))
+    thread.daemon = True
+    thread.start() # Never crash the app over a notification
 
 def notify_donation_status(donation, new_status):
     """Send email to relevant party when donation status changes."""
